@@ -4,49 +4,142 @@ import numpy as np
 import joblib
 import os
 
-# Page configuration
+# ----------------- PAGE CONFIGURATION -----------------
 st.set_page_config(
-    page_title="Credit Risk Predictor",
-    page_icon="💳",
+    page_title="Credit Risk Intelligence",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for styling
+# ----------------- CUSTOM CSS FOR HIGH-DEF UI -----------------
 st.markdown("""
 <style>
-    .reportview-container {
-        background-color: #f4f6f9;
-        font-family: 'Inter', sans-serif;
+    /* Global Typography & Background */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif !important;
     }
+    
+    .stApp {
+        background-color: #f8fafc;
+    }
+
+    /* Hide default Streamlit elements for a cleaner look */
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+
+    /* Main Header Styling */
+    .main-header {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 0px;
+        letter-spacing: -0.5px;
+    }
+    
+    .sub-header {
+        font-size: 1.1rem;
+        font-weight: 400;
+        color: #64748b;
+        margin-bottom: 40px;
+    }
+
+    /* Input grouping cards */
+    div[data-testid="stForm"] {
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+        border: 1px solid #e2e8f0;
+    }
+
+    /* Custom Button Styling */
     .stButton>button {
-        background-color: #4CAF50;
-        color: white;
-        font-weight: bold;
-        font-size: 16px;
-        padding: 10px 24px;
-        border-radius: 8px;
-        border: none;
-        transition: all 0.3s ease;
+        background-color: #0f172a !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        letter-spacing: 0.5px !important;
+        border-radius: 8px !important;
+        padding: 12px 24px !important;
+        border: none !important;
+        box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.1) !important;
+        transition: all 0.2s ease !important;
+        width: 100% !important;
+        margin-top: 20px !important;
     }
+    
     .stButton>button:hover {
-        background-color: #45a049;
-        box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.15) !important;
+        background-color: #1e293b !important;
     }
-    h1, h2, h3 {
-        color: #2C3E50;
-    }
-    .metric-card {
-        background-color: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0px 4px 6px rgba(0,0,0,0.05);
+
+    /* Result Cards */
+    .result-card-safe {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        border: 1px solid #bbf7d0;
+        border-radius: 12px;
+        padding: 30px;
         text-align: center;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
     }
+    
+    .result-card-danger {
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        border: 1px solid #fecaca;
+        border-radius: 12px;
+        padding: 30px;
+        text-align: center;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }
+
+    .status-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .prob-text {
+        font-size: 1.2rem;
+        color: #475569;
+        font-weight: 500;
+    }
+
+    /* Metric Containers */
+    .metric-container {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .metric-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+    
+    .metric-label {
+        font-size: 13px;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
 </style>
 """, unsafe_allow_html=True)
 
-# Load Models
+# ----------------- MODEL LOADING -----------------
 @st.cache_resource
 def load_models():
     if not os.path.exists('models/xgb_model.pkl'):
@@ -56,56 +149,67 @@ def load_models():
     feature_cols = joblib.load('models/feature_cols.pkl')
     return model, scaler, feature_cols
 
-st.title("💳 Credit Risk Prediction System")
-st.markdown("Enter customer details below to predict the likelihood of credit card default using our advanced XGBoost Machine Learning model.")
-
 model, scaler, feature_cols = load_models()
 
+# ----------------- UI HEADER -----------------
+st.markdown("<div class='main-header'>Credit Risk Intelligence</div>", unsafe_allow_html=True)
+st.markdown("<div class='sub-header'>A high-definition enterprise tool for behavioral credit risk analysis and default probability assessment.</div>", unsafe_allow_html=True)
+
 if not model:
-    st.error("Error: Models not found! Please ensure 'src/train.py' has been run to generate the model files in the 'models/' directory.")
+    st.error("Model artifacts not found. Please verify deployment configuration.")
     st.stop()
 
-# Sidebar for Input Features
-st.sidebar.header("📋 Customer Information")
-st.sidebar.markdown("Please provide the borrower's details:")
-
-# Create input fields
-with st.sidebar.form("input_form"):
-    age = st.slider("Age", min_value=18, max_value=100, value=35)
-    gender = st.selectbox("Gender", ["M", "F", "XNA"])
-    owns_car = st.selectbox("Owns a Car?", ["Y", "N"])
-    owns_house = st.selectbox("Owns a House?", ["Y", "N"])
-    no_of_children = st.number_input("Number of Children", min_value=0, max_value=20, value=0)
-    net_yearly_income = st.number_input("Net Yearly Income ($)", min_value=0, value=50000, step=1000)
-    no_of_days_employed = st.number_input("Days Employed", min_value=0, value=1500, step=100)
+# ----------------- MAIN FORM DASHBOARD -----------------
+with st.form("risk_assessment_form"):
     
-    # Common Occupation Types from dataset
-    occ_types = ['Laborers', 'Core staff', 'Sales staff', 'Managers', 'Drivers', 
-                 'High skill tech staff', 'Accountants', 'Medicine staff', 
-                 'Security staff', 'Cooking staff', 'Cleaning staff', 
-                 'Private service staff', 'Low-skill Laborers', 'Secretaries', 
-                 'Waiters/barmen staff', 'Realty agents', 'HR staff', 'IT staff', 'Unknown']
-    occupation_type = st.selectbox("Occupation Type", occ_types)
+    col1, col2, col3 = st.columns(3)
     
-    total_family_members = st.number_input("Total Family Members", min_value=1, max_value=20, value=2)
-    migrant_worker = st.selectbox("Migrant Worker?", ["No", "Yes"])
-    migrant_worker_val = 1.0 if migrant_worker == "Yes" else 0.0
+    with col1:
+        st.markdown("**Personal Demographics**")
+        age = st.number_input("Age", min_value=18, max_value=100, value=35)
+        gender = st.selectbox("Gender", ["M", "F", "XNA"])
+        no_of_children = st.number_input("Number of Children", min_value=0, max_value=20, value=0)
+        total_family_members = st.number_input("Total Family Members", min_value=1, max_value=20, value=2)
+        migrant_worker = st.selectbox("Migrant Worker Status", ["No", "Yes"])
+        migrant_worker_val = 1.0 if migrant_worker == "Yes" else 0.0
+
+    with col2:
+        st.markdown("**Financial & Employment Factors**")
+        net_yearly_income = st.number_input("Net Yearly Income (USD)", min_value=0, value=50000, step=1000)
+        yearly_debt_payments = st.number_input("Yearly Debt Payments (USD)", min_value=0, value=10000, step=500)
+        no_of_days_employed = st.number_input("Total Days Employed", min_value=0, value=1500, step=100)
+        
+        occ_types = ['Laborers', 'Core staff', 'Sales staff', 'Managers', 'Drivers', 
+                     'High skill tech staff', 'Accountants', 'Medicine staff', 
+                     'Security staff', 'Cooking staff', 'Cleaning staff', 
+                     'Private service staff', 'Low-skill Laborers', 'Secretaries', 
+                     'Waiters/barmen staff', 'Realty agents', 'HR staff', 'IT staff', 'Unknown']
+        occupation_type = st.selectbox("Occupation Classification", occ_types)
+        
+        c21, c22 = st.columns(2)
+        owns_car = c21.selectbox("Owns Automobile", ["Y", "N"])
+        owns_house = c22.selectbox("Owns Property", ["Y", "N"])
+
+    with col3:
+        st.markdown("**Credit History Metrics**")
+        credit_limit = st.number_input("Available Credit Limit (USD)", min_value=0, value=20000, step=1000)
+        credit_limit_used = st.slider("Credit Limit Utilization (%)", min_value=0, max_value=100, value=30)
+        credit_score = st.slider("Federated Credit Score", min_value=300, max_value=900, value=700)
+        
+        prev_defaults = st.number_input("Historical Default Events", min_value=0, max_value=50, value=0)
+        default_in_last_6months = st.number_input("Defaults (Trailing 6 Months)", min_value=0, max_value=10, value=0)
+
+    # Empty space for alignment
+    st.markdown("<br>", unsafe_allow_html=True)
     
-    yearly_debt_payments = st.number_input("Yearly Debt Payments ($)", min_value=0, value=10000, step=500)
-    credit_limit = st.number_input("Credit Limit ($)", min_value=0, value=20000, step=1000)
-    credit_limit_used = st.slider("Credit Limit Used (%)", min_value=0, max_value=100, value=30)
-    credit_score = st.slider("Credit Score", min_value=300, max_value=900, value=700)
-    
-    prev_defaults = st.number_input("Previous Defaults", min_value=0, max_value=50, value=0)
-    default_in_last_6months = st.number_input("Defaults in Last 6 Months", min_value=0, max_value=10, value=0)
+    # Submit Button
+    submitted = st.form_submit_button("Execute Risk Subroutine")
 
-    submitted = st.form_submit_button("Predict Credit Risk 🚀")
-
-# Main Panel Layout
-col1, col2 = st.columns([1, 1])
-
+# ----------------- PREDICTION LOGIC -----------------
 if submitted:
-    # Prepare input dictionary
+    st.markdown("<br><hr style='border-color: #e2e8f0;'><br>", unsafe_allow_html=True)
+    
+    # Structure input mapping identically to training vector
     input_data = {
         'age': age,
         'gender': gender,
@@ -125,54 +229,71 @@ if submitted:
         'default_in_last_6months': int(default_in_last_6months)
     }
     
-    # Convert to DataFrame
+    # Vectorization & Encoding
     input_df = pd.DataFrame([input_data])
-    
-    # Apply get_dummies matching the training pipeline
     input_encoded = pd.get_dummies(input_df)
-    
-    # Reindex to ensure all expected feature columns are present (fill missing ones with 0)
     input_encoded = input_encoded.reindex(columns=feature_cols, fill_value=0)
     
-    # Scale Features
+    # Statistical Scaling
     input_scaled = scaler.transform(input_encoded)
     
-    # Predict
+    # Inference
     prediction = model.predict(input_scaled)[0]
     prediction_proba = model.predict_proba(input_scaled)[0][1]
     
-    # Display Results
-    st.markdown("---")
-    st.subheader("🎯 Prediction Results")
+    # ----------------- RESULTS DASHBOARD -----------------
+    st.markdown("<div class='main-header' style='font-size: 1.5rem; margin-bottom: 20px;'>Risk Analysis Output</div>", unsafe_allow_html=True)
     
     if prediction == 1:
-        st.error("🚨 **High Risk of Default Detected!**")
-        st.markdown(f"The model predicts the client **WILL DEFAULT** on their credit card with a probability of **{prediction_proba * 100:.2f}%**.")
-        st.image("https://img.icons8.com/color/96/000000/cancel--v1.png", width=64)
+        st.markdown(f"""
+        <div class="result-card-danger">
+            <div class="status-title" style="color: #b91c1c;">HIGH RISK PROFILE DETECTED</div>
+            <div class="prob-text">The analytical subroutine indicates a severe statistical trajectory toward credit card default.</div>
+        </div>
+        """, unsafe_allow_html=True)
+        risk_level = "Critical"
+        risk_color = "#b91c1c"
     else:
-        st.success("✅ **Low Risk / Safe Client**")
-        st.markdown(f"The model predicts the client **WILL NOT DEFAULT** on their credit card. (Default Probability: **{prediction_proba * 100:.2f}%**)")
-        st.image("https://img.icons8.com/color/96/000000/ok--v1.png", width=64)
-        
-    st.markdown("### Risk Analysis Metrics")
-    c1, c2, c3 = st.columns(3)
-    
-    risk_level = "High" if prediction == 1 else ("Medium" if prediction_proba > 0.3 else "Low")
-    risk_color = "red" if risk_level == "High" else ("orange" if risk_level == "Medium" else "green")
-    
-    c1.markdown(f"<div class='metric-card'><h4 style='color:#7f8c8d'>Risk Level</h4><h2 style='color:{risk_color}'>{risk_level}</h2></div>", unsafe_allow_html=True)
-    c2.markdown(f"<div class='metric-card'><h4 style='color:#7f8c8d'>Default Probability</h4><h2>{prediction_proba * 100:.1f}%</h2></div>", unsafe_allow_html=True)
-    
-    health = "Poor" if credit_score < 580 else ("Fair" if credit_score < 670 else ("Good" if credit_score < 740 else "Excellent"))
-    c3.markdown(f"<div class='metric-card'><h4 style='color:#7f8c8d'>Credit Health</h4><h2>{health}</h2></div>", unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class="result-card-safe">
+            <div class="status-title" style="color: #15803d;">LOW RISK PROFILE VERIFIED</div>
+            <div class="prob-text">The behavioral and financial footprint aligns with statistically secure repayment models.</div>
+        </div>
+        """, unsafe_allow_html=True)
+        risk_level = "Secure" if prediction_proba < 0.25 else "Moderate"
+        risk_color = "#15803d" if risk_level == "Secure" else "#b45309"
 
-else:
-    st.info("👈 Please fill out the customer details in the sidebar to generate a prediction.")
+    st.markdown("<br>", unsafe_allow_html=True)
     
-    st.markdown("### How it Works")
-    st.markdown("""
-    1. **Data Input**: The sidebar allows entry of demographic and financial indicators.
-    2. **Processing**: The data is encoded and scaled to match the trained schema dynamically.
-    3. **Evaluation**: An **XGBoost Classifier** rigorously evaluates the multi-dimensional risk vector.
-    4. **Output**: An immediate classification (Default / No Default) along with the exact probability.
-    """)
+    # Metrics row
+    r1, r2, r3, r4 = st.columns(4)
+    
+    r1.markdown(f"""
+    <div class="metric-container">
+        <div class="metric-label">Calculated Risk Index</div>
+        <div class="metric-value" style="color: {risk_color}">{risk_level}</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    r2.markdown(f"""
+    <div class="metric-container">
+        <div class="metric-label">Default Probability</div>
+        <div class="metric-value">{prediction_proba * 100:.1f}%</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    health = "Subprime" if credit_score < 580 else ("Prime" if credit_score >= 670 else "Near Prime")
+    r3.markdown(f"""
+    <div class="metric-container">
+        <div class="metric-label">Credit Tier</div>
+        <div class="metric-value">{health}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    dti = (yearly_debt_payments / net_yearly_income) * 100 if net_yearly_income > 0 else 0
+    r4.markdown(f"""
+    <div class="metric-container">
+        <div class="metric-label">DTI Ratio</div>
+        <div class="metric-value">{dti:.1f}%</div>
+    </div>
+    """, unsafe_allow_html=True)
