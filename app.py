@@ -229,36 +229,73 @@ if submitted:
         risk_color = "#22c55e" if risk_level == "Low" else "#eab308"
 
     st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<h3>Customer Financial Health</h3>", unsafe_allow_html=True)
     
-    # Simple Metrics
-    s1, s2, s3, s4 = st.columns(4)
+    # Financial Health Metrics
+    s1, s2, s3 = st.columns(3)
     
     s1.markdown(f"""
     <div class="metric-card">
         <div class="metric-num" style="color: {risk_color}">{risk_level}</div>
-        <div class="metric-label">Risk Level</div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    s2.markdown(f"""
-    <div class="metric-card">
-        <div class="metric-num">{prediction_proba * 100:.1f}%</div>
-        <div class="metric-label">Default Probability</div>
+        <div class="metric-label">Model Risk Level</div>
     </div>
     """, unsafe_allow_html=True)
     
     health = "Poor" if credit_score < 580 else ("Good" if credit_score >= 670 else "Fair")
-    s3.markdown(f"""
+    s2.markdown(f"""
     <div class="metric-card">
         <div class="metric-num">{health}</div>
-        <div class="metric-label">Credit Status</div>
+        <div class="metric-label">Credit Bureau Status</div>
     </div>
     """, unsafe_allow_html=True)
 
     dti = (yearly_debt_payments / net_yearly_income) * 100 if net_yearly_income > 0 else 0
-    s4.markdown(f"""
+    s3.markdown(f"""
     <div class="metric-card">
         <div class="metric-num">{dti:.1f}%</div>
-        <div class="metric-label">Debt-to-Income</div>
+        <div class="metric-label">Debt-to-Income (DTI)</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<h3>Basel IRB Risk Exposure (Quantitative)</h3>", unsafe_allow_html=True)
+    
+    # Calculate Basel quantities
+    current_balance = float(credit_limit) * (float(credit_limit_used) / 100.0)
+    undrawn_amount = float(credit_limit) - current_balance
+    ccf = 0.75 # 75% credit conversion factor on undrawn amount
+    ead = current_balance + (ccf * undrawn_amount)
+    
+    lgd = 0.75 # 75% loss given default assumption for unsecured credit cards
+    pd_val = prediction_proba
+    expected_loss = pd_val * lgd * ead
+    
+    r1, r2, r3, r4 = st.columns(4)
+
+    r1.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-num">{pd_val * 100:.1f}%</div>
+        <div class="metric-label">PD (Probability of Default)</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    r2.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-num">75.0%</div>
+        <div class="metric-label">LGD (Assumed)</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    r3.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-num">${ead:,.0f}</div>
+        <div class="metric-label">EAD (Exposure at Default)</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    r4.markdown(f"""
+    <div class="metric-card" style="border: 2px solid #ef4444;">
+        <div class="metric-num" style="color: #ef4444;">${expected_loss:,.0f}</div>
+        <div class="metric-label">Expected Loss (EL)</div>
     </div>
     """, unsafe_allow_html=True)

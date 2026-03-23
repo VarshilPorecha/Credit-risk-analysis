@@ -1,6 +1,12 @@
-# Credit Risk Analysis
+# Quantitative Credit Risk Analysis (IRB Framework)
 
-This project builds an end-to-end machine learning pipeline to predict credit defaults using financial customer data. 
+This project builds an end-to-end machine learning pipeline to predict credit defaults using financial customer data. It implements a Basel Internal Ratings-Based (IRB) approach by estimating Probability of Default (PD), Exposure at Default (EAD), and Loss Given Default (LGD) to calculate Expected Financial Loss.
+
+## Features & Quantitative Metrics
+- **Probability of Default (PD)**: Predicted using an optimized XGBoost classifier.
+- **Exposure at Default (EAD)**: Derived dynamically using current balance, undrawn limits, and a Credit Conversion Factor (CCF ~ 75%).
+- **Loss Given Default (LGD)**: Assumed regulatory standard (75%) for unsecured consumer credit.
+- **Expected Loss (EL)**: Calculated at the portfolio and individual level to estimate direct monetary value at risk (`EL = PD * LGD * EAD`).
 
 ## Structure
 - `data/` : Original datasets (e.g., `train.csv` and `test.csv`)

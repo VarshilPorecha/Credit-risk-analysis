@@ -47,8 +47,21 @@ def predict(input_path, output_path):
     probabilities = model.predict_proba(X_scaled)[:, 1]
     
     original_df['prediction'] = predictions
-    original_df['default_probability'] = probabilities
+    original_df['PD_Probability_of_Default'] = probabilities
     
+    # Calculate EAD, LGD, Expected Loss if columns exist
+    if 'credit_limit' in original_df.columns and 'credit_limit_used(%)' in original_df.columns:
+        current_balance = original_df['credit_limit'] * (original_df['credit_limit_used(%)'] / 100.0)
+        undrawn_amount = original_df['credit_limit'] - current_balance
+        ccf = 0.75 # 75% credit conversion factor
+        original_df['EAD_Exposure_At_Default'] = current_balance + (ccf * undrawn_amount)
+        
+        original_df['LGD_Loss_Given_Default'] = 0.75 # Assumed 75%
+        original_df['EL_Expected_Loss'] = original_df['PD_Probability_of_Default'] * original_df['LGD_Loss_Given_Default'] * original_df['EAD_Exposure_At_Default']
+    else:
+        # Fallback if credit features are missing
+        original_df['LGD_Loss_Given_Default'] = 0.75
+        
     original_df.to_csv(output_path, index=False)
     print(f"Predictions saved to {output_path}.")
 
