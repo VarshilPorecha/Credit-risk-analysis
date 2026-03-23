@@ -8,4 +8,5 @@ imbalanced-learn
 joblib
 jupyter
 nbconvert
-streamlit
+streamlit>=1.50.0
+altair<5.0.0
